@@ -2,6 +2,7 @@
  * Network Function Testbed
  */
 #include <conio.h>
+#include <stdio.h>
 #include "console.h"
 #include "fujinet_network.h"
 
@@ -9,14 +10,26 @@ unsigned char buf[1024];
 unsigned char txbuf[64];
 unsigned char t=0;
 
+struct network_status status;
+
+
 void in(void)
 {
-    unsigned short l = fujinet_network_read(url, buf, sizeof(buf));
+    FUJINET_RC rc = fujinet_network_status(url, &status);
 
-    if (l > 0) {
-        for (unsigned short i=0;i<l;i++)
-        {
-            console_tx(buf[i]);
+    if (rc == FUJINET_RC_OK) {
+        uint16_t l = (status.bytes_waiting_high << 8) + status.bytes_waiting_low;
+
+        //printf("reading %u bytes\n", l);
+        if (l > 0) {
+            rc = fujinet_network_read(url, buf, l);
+            //printf("read %u bytes (%u)\n", l, rc);
+            if (rc == FUJINET_RC_OK) {
+                for (uint16_t i = 0; i < l; i++)
+                {
+                    putch(buf[i]);
+                }
+            }
         }
     }
 }
@@ -26,7 +39,7 @@ void out(void)
     char k;
 
     k = console_rx_avail();
-    if (k > 1) {
+    if (k > 0) {
         txbuf[0] = console_rx();
         fujinet_network_write(url, txbuf, 1); // send one char.
     }
