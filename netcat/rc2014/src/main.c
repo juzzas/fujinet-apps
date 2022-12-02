@@ -27,7 +27,7 @@ void in(void)
             if (rc == FUJINET_RC_OK) {
                 for (uint16_t i = 0; i < l; i++)
                 {
-                    putch(buf[i]);
+                    cputc(buf[i]);
                 }
             }
         }
@@ -38,9 +38,9 @@ void out(void)
 {
     char k;
 
-    k = console_rx_avail();
+    k = kbhit();
     if (k > 0) {
-        txbuf[0] = console_rx();
+        txbuf[0] = cgetc();
         fujinet_network_write(url, txbuf, 1); // send one char.
     }
 }
@@ -48,7 +48,7 @@ void out(void)
 char url[256];
 int main(int argc, char **argv)
 {
-    clrscr();
+//    clrscr();
 
     cprintf("Welcome to netcat, an example #FujiNet Network Program\nThis is a very simple 80 column terminal program.\n\nAvailable protocols: TCP UDP TELNET HTTP/S TNFS FTP\n\nURL's are of the form:\n\nN:PROTO://host.name:port/path?key=val&key=val\n\nExamples of URL's:\n------------------\nN:TELNET://BBS.FOZZTEXX.NET:23/\nN:HTTPS://www.gnu.org/licenses/gpl-3.0.txt\n\n");
 
