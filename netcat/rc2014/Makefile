@@ -3,14 +3,8 @@ TARGET_EXEC ?= netcat.com
 BUILD_DIR ?= ./build
 SRC_DIRS ?= ./src
 
-LIB_PROJECT := @../../../fujinet-rc2014/lib/lib_rc2014_cpm.lst
+LIB_PROJECT := @../../../fujinet-rc2014/lib/driver_rc2014_spi.lst @../../../fujinet-rc2014/lib/lib_rc2014_cpm.lst
 LIB_PROJECT_INC := ../../../fujinet-rc2014/lib/include
-
-#ADDL_DIR1 := ../eoslib/src
-#ADDL_DIR2 := ../smartkeyslib/src
-#
-#ADDL_LIB1 := ../eoslib/eos.lib
-#ADDL_LIB2 := ../smartkeyslib/smartkeys.lib
 
 CC=zcc
 AS=zcc
@@ -23,16 +17,15 @@ DEPS := $(OBJS:.o=.d)
 #LDFLAGS=+rc2014 -subtype=cpm -create-app -o$(TARGET_EXEC)
 #ASFLAGS=+rc2014 -subtype=cpm
 
-CFLAGS=+cpm -DBUILD_RC2014 -I$(LIB_PROJECT_INC) -clib=ansi -pragma-redirect:fputc_cons=fputc_cons_generic
-LDFLAGS=+cpm -create-app -I$(LIB_PROJECT_INC) -o$(TARGET_EXEC)
-ASFLAGS=+cpm
+CFLAGS=-v +rc2014 -subtype=cpm -DBUILD_RC2014 -I$(LIB_PROJECT_INC) -clib=sdcc_iy -pragma-redirect:fputc_cons=fputc_cons_generic
+LDFLAGS=-v +rc2014 -subtype=cpm -create-app -I$(LIB_PROJECT_INC) -o$(TARGET_EXEC)
+ASFLAGS=-v +rc2014 -subtype=cpm
 
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) $(LIB_PROJECT)
-	#cp autorun.ddp ../fujinet-platformio/data/BUILD_ADAM/
 
 # c source
 $(BUILD_DIR)/%.c.o: %.c
@@ -47,7 +40,7 @@ $(BUILD_DIR)/%.asm.o: %.asm
 .PHONY: clean
 
 clean:
-	$(RM) -r FNCONFIG* fnconfig* $(BUILD_DIR)
+	$(RM) -r NETCAT* netcat* $(BUILD_DIR)
 
 -include $(DEPS)
 
