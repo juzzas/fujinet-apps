@@ -1,47 +1,25 @@
-TARGET_EXEC ?= netcat.com
+CC=zcc
+TARGET_EXEC ?= netcat
+
+TARGET=+rc2014 -subtype=cpm -clib=sdcc_iy
+CFLAGS=--max-allocs-per-node200000 -SO3
+
+LIB_FUJINET := -l../../../fujinet-rc2014/libfn_cpm -l../../../fujinet-rc2014/libfujinet
+LIB_FUJINET_INC := -I../../../fujinet-rc2014/lib/include
 
 BUILD_DIR ?= ./build
 SRC_DIRS ?= ./src
 
-LIB_PROJECT := @../../../fujinet-rc2014/lib/driver_rc2014_spi.lst @../../../fujinet-rc2014/lib/lib_rc2014_cpm.lst
-LIB_PROJECT_INC := ../../../fujinet-rc2014/lib/include
+.PHONY: clean all $(BUILD_DIR)/$(TARGET_EXEC)
 
-CC=zcc
-AS=zcc
+all: $(BUILD_DIR)/$(TARGET_EXEC)
 
-SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.asm)
-OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
-DEPS := $(OBJS:.o=.d)
-
-#CFLAGS=+rc2014 -subtype=cpm -DBUILD_RC2014
-#LDFLAGS=+rc2014 -subtype=cpm -create-app -o$(TARGET_EXEC)
-#ASFLAGS=+rc2014 -subtype=cpm
-
-CFLAGS=-v +rc2014 -subtype=cpm -DBUILD_RC2014 -I$(LIB_PROJECT_INC) -clib=sdcc_iy -pragma-redirect:fputc_cons=fputc_cons_generic
-LDFLAGS=-v +rc2014 -subtype=cpm -create-app -I$(LIB_PROJECT_INC) -o$(TARGET_EXEC)
-ASFLAGS=-v +rc2014 -subtype=cpm
-
-INC_DIRS := $(shell find $(SRC_DIRS) -type d)
-INC_FLAGS := $(addprefix -I,$(INC_DIRS))
-
-$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) $(LIB_PROJECT)
-
-# c source
-$(BUILD_DIR)/%.c.o: %.c
+$(BUILD_DIR)/$(TARGET_EXEC):
 	$(MKDIR_P) $(dir $@)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	${CC} ${TARGET} -v -m --list ${CFLAGS} ${LIB_FUJINET_INC} ${LIB_FUJINET} src/main.c -o $@ -create-app
 
-# asm source
-$(BUILD_DIR)/%.asm.o: %.asm
-	$(MKDIR_P) $(dir $@)
-	$(AS) $(ASFLAGS) -c $< -o $@
-
-.PHONY: clean
 
 clean:
 	$(RM) -r NETCAT* netcat* $(BUILD_DIR)
-
--include $(DEPS)
 
 MKDIR_P ?= mkdir -p
